@@ -8,7 +8,7 @@ import { Card, button, input } from '@/components/ui';
 
 type Inicial = { umbralVerde: number; umbralAmbar: number; webhookUrl: string; emailAviso: string };
 
-export function AjustesForm({ inicial }: { inicial: Inicial }) {
+export function AjustesForm({ inicial, clienteId }: { inicial: Inicial; clienteId: string }) {
   const [state, action, pending] = useActionState(guardarAjustes, null);
   const [verde, setVerde] = useState(String(inicial.umbralVerde));
   const [ambar, setAmbar] = useState(String(inicial.umbralAmbar));
@@ -20,6 +20,7 @@ export function AjustesForm({ inicial }: { inicial: Inicial }) {
 
   return (
     <form action={action} className="grid gap-6">
+      <input name="clienteId" type="hidden" value={clienteId} />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card title="Umbrales de DTI">
           <p className="text-sm leading-6 text-zinc-600">

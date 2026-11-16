@@ -37,7 +37,7 @@ export const site = {
   /** Links only signed-in users see (dashboard, lists, admin). */
   appNav: [
     { href: '/admin', label: 'Leads' },
-    { href: '/admin/ajustes', label: 'Ajustes' },
+    { href: '/admin/clientes', label: 'Clientes' },
   ] as { href: string; label: string }[],
 };
 

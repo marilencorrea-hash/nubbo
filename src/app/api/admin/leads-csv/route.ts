@@ -19,7 +19,7 @@ export async function GET(request: Request) {
   if (!user) return Response.json({ error: 'No autenticado' }, { status: 401 });
   if (!isAdmin(user)) return Response.json({ error: 'Sin permiso' }, { status: 403 });
   const p = new URL(request.url).searchParams;
-  const rows = await leadsFiltrados(p.get('viabilidad'), p.get('desde'), p.get('hasta'), 10000);
+  const rows = await leadsFiltrados(p.get('viabilidad'), p.get('desde'), p.get('hasta'), 10000, p.get('cliente'));
   const lines = [cols.join(',')].concat(rows.map((r) => [r.id, r.nombre, r.email, r.telefono, r.precioInmueble, r.entrada, r.importe,
     r.plazoAnios, r.tipoInteres, r.ingresosNetos, r.otrasCuotas, r.cuotaMensual, r.dti, r.viabilidad, r.consentimientoRgpd,
     r.createdAt.toISOString()].map(cell).join(',')));

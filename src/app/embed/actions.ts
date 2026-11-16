@@ -6,7 +6,7 @@ import { totalum } from 'totalum-sdk';
 
 import { db } from '@/db';
 import { leads } from '@/db/schema';
-import { configQuery, defaultConfig } from '@/lib/config';
+import { clienteQuery, defaultConfig } from '@/lib/config';
 import { calcular, type Viabilidad } from '@/lib/scoring';
 import { site } from '@/lib/site';
 
@@ -26,13 +26,13 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : NaN);
 
 /** Umbrales vigentes, para mostrar el resultado en el wizard (misma fórmula que el servidor). */
-export async function obtenerUmbrales() {
-  const [c] = await configQuery();
+export async function obtenerUmbrales(clave?: string | null) {
+  const [c] = await clienteQuery(clave);
   return { verde: c?.umbralVerde ?? defaultConfig.umbralVerde, ambar: c?.umbralAmbar ?? defaultConfig.umbralAmbar };
 }
 
 /** Guarda el lead (solo con consentimiento RGPD), avisa por e-mail al admin y envía el webhook. */
-export async function solicitarContacto(d: DatosWizard, c: Contacto): Promise<Resultado> {
+export async function solicitarContacto(d: DatosWizard, c: Contacto, clave?: string | null): Promise<Resultado> {
   if (c.consentimiento !== true) return { ok: false, error: 'Debes aceptar el consentimiento para que podamos contactarte.' };
   const nombre = String(c.nombre ?? '').trim().slice(0, 120);
   const email = String(c.email ?? '').trim().toLowerCase().slice(0, 160);
@@ -48,12 +48,13 @@ export async function solicitarContacto(d: DatosWizard, c: Contacto): Promise<Re
     v.ingresosNetos <= 0 || v.plazoAnios < 1 || v.plazoAnios > 50 || v.tipoInteres < 0 || v.tipoInteres > 30)
     return { ok: false, error: 'Revisa los datos de la simulación.' };
 
-  const [cfg] = await configQuery();
+  const [cfg] = await clienteQuery(clave);
+  if (!cfg) return { ok: false, error: 'Cliente no válido.' };
   const conf = { ...defaultConfig, ...cfg };
   const r = calcular(v, conf.umbralVerde, conf.umbralAmbar);
   const lead = {
     id: randomUUID(), nombre, email, telefono, ...v, cuotaMensual: r.cuotaMensual, dti: r.dti,
-    viabilidad: r.viabilidad, consentimientoRgpd: true, webhookEstado: null as string | null, createdAt: new Date(),
+    viabilidad: r.viabilidad, consentimientoRgpd: true, clienteId: cfg.id, webhookEstado: null as string | null, createdAt: new Date(),
   };
 
   // Webhook primero (para guardar su estado), sin bloquear si falla.
@@ -62,7 +63,7 @@ export async function solicitarContacto(d: DatosWizard, c: Contacto): Promise<Re
       const res = await fetch(conf.webhookUrl, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ ...lead, createdAt: lead.createdAt.toISOString(), webhookEstado: undefined }),
+        body: JSON.stringify({ ...lead, cliente: cfg.nombre, createdAt: lead.createdAt.toISOString(), webhookEstado: undefined }),
         signal: AbortSignal.timeout(5000),
       });
       lead.webhookEstado = res.ok ? 'enviado' : `error ${res.status}`;
@@ -79,7 +80,7 @@ export async function solicitarContacto(d: DatosWizard, c: Contacto): Promise<Re
     try {
       await totalum.email.send({
         to,
-        subject: `Nuevo lead ${r.viabilidad.toUpperCase()}: ${nombre}`,
+        subject: `Nuevo lead ${r.viabilidad.toUpperCase()}: ${nombre} (${cfg.nombre})`,
         html: `<h2>Nuevo lead</h2><p><b>${esc(nombre)}</b><br>${esc(email)}<br>${esc(telefono)}</p>
 <p>Cuota mensual: <b>${r.cuotaMensual.toFixed(2)} €</b><br>DTI: <b>${r.dti.toFixed(2)} %</b><br>Viabilidad: <b>${r.viabilidad}</b></p>
 <p>Precio ${v.precioInmueble} € · Entrada ${v.entrada} € · Importe ${v.importe} € · ${v.plazoAnios} años · ${v.tipoInteres} %<br>Ingresos ${v.ingresosNetos} € · Otras cuotas ${v.otrasCuotas} €</p>`,

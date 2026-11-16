@@ -7,6 +7,8 @@ import { ViabBadge } from '@/components/semaforo';
 import { AppPage, Card, EmptyState, Stat, button, input } from '@/components/ui';
 import { isAdmin } from '@/lib/admin';
 import { eur, fecha, pct } from '@/lib/format';
+import { db } from '@/db';
+import { config } from '@/db/schema';
 import { leadsFiltrados } from '@/lib/leads-query';
 import { loadPage } from '@/lib/load-page';
 
@@ -19,17 +21,20 @@ export default async function AdminLeads({ searchParams }: { searchParams: Promi
   const viab = one(sp.viabilidad);
   const desde = one(sp.desde);
   const hasta = one(sp.hasta);
-  const { user, data } = await loadPage((_me) => [leadsFiltrados(viab, desde, hasta)] as const, { signedIn: true });
+  const cliente = one(sp.cliente);
+  const { user, data } = await loadPage((_me) => [leadsFiltrados(viab, desde, hasta, 500, cliente), db.select({ id: config.id, nombre: config.nombre }).from(config).limit(200)] as const, { signedIn: true });
   if (!user) redirect('/login');
   if (!isAdmin(user)) return <AccesoRestringido />;
   const rows = data[0];
+  const clientes = data[1];
 
   const qs = new URLSearchParams();
   if (viab) qs.set('viabilidad', viab);
   if (desde) qs.set('desde', desde);
   if (hasta) qs.set('hasta', hasta);
+  if (cliente) qs.set('cliente', cliente);
   const csv = `/api/admin/leads-csv${qs.size ? `?${qs}` : ''}`;
-  const filtrado = !!(viab || desde || hasta);
+  const filtrado = !!(viab || desde || hasta || cliente);
   const n = (v: string) => rows.filter((r) => r.viabilidad === v).length;
   const label = 'block text-sm font-medium text-zinc-800';
 
@@ -54,7 +59,18 @@ export default async function AdminLeads({ searchParams }: { searchParams: Promi
       </div>
 
       <Card>
-        <form action="/admin" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_auto]" method="get">
+        <form action="/admin" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" method="get">
+          <label className={label}>
+            Cliente
+            <select className={input} defaultValue={cliente} name="cliente">
+              <option value="">Todos</option>
+              {clientes.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className={label}>
             Viabilidad
             <select className={input} defaultValue={viab} name="viabilidad">

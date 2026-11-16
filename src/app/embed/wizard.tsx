@@ -91,7 +91,7 @@ const btnSecondary =
 const inputCls =
   'mt-1.5 w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-base outline-none transition-colors focus:border-accent focus:ring-2 focus:ring-accent/20';
 
-export function Wizard() {
+export function Wizard({ cliente }: { cliente?: string }) {
   const [step, setStep] = useState(0); // 0..2 pasos, 3 resultado
   const [v, setV] = useState<Values>({ precio: '', entrada: '', importe: '', plazo: '25', interes: '', ingresos: '', otras: '0' });
   const [errors, setErrors] = useState<Errors>({});
@@ -162,7 +162,7 @@ export function Wizard() {
     setBusy(true);
     let umbrales = { verde: 30, ambar: 40 };
     try {
-      umbrales = await obtenerUmbrales();
+      umbrales = await obtenerUmbrales(cliente);
     } catch {
       /* se usan los umbrales por defecto */
     }
@@ -179,7 +179,7 @@ export function Wizard() {
     setSending(true);
     setSendError(null);
     try {
-      const r = await solicitarContacto(datos(), { ...c, consentimiento: consent });
+      const r = await solicitarContacto(datos(), { ...c, consentimiento: consent }, cliente);
       if (r.ok) setDone(true);
       else setSendError(r.error);
     } catch {
