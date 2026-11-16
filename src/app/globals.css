@@ -1,9 +1,25 @@
 @import 'tailwindcss';
 
-/* The project's design tokens (colours, radius): see _system-docs/design.md. */
+/* Tokens de HipoScore: azul corporativo profundo + un azul eléctrico, greys fríos; semáforo solo para la viabilidad. */
 @theme {
-  --color-brand: oklch(0.55 0.2 260);
-  --color-accent: oklch(0.75 0.15 70);
+  --color-brand: oklch(0.3 0.095 262);
+  --color-accent: oklch(0.58 0.22 262);
+
+  /* greys fríos: todas las superficies, bordes y textos `zinc-*` de la plantilla se vuelven azulados */
+  --color-zinc-50: oklch(0.984 0.004 250);
+  --color-zinc-100: oklch(0.965 0.007 250);
+  --color-zinc-200: oklch(0.92 0.011 250);
+  --color-zinc-300: oklch(0.865 0.016 252);
+  --color-zinc-400: oklch(0.7 0.024 255);
+  --color-zinc-500: oklch(0.52 0.03 257);
+  --color-zinc-600: oklch(0.43 0.035 259);
+  --color-zinc-700: oklch(0.36 0.04 260);
+  --color-zinc-800: oklch(0.27 0.045 261);
+  --color-zinc-900: oklch(0.2 0.05 262);
+  --color-zinc-950: oklch(0.15 0.045 262);
+
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.625rem;
 }
 
 /*
@@ -14,4 +30,18 @@
 @theme inline {
   --font-sans: var(--font-body, ui-sans-serif), system-ui, sans-serif;
   --font-display: var(--font-heading, var(--font-body, ui-sans-serif)), system-ui, sans-serif;
+}
+
+/* Cifras, fórmulas y código: la mono de acento (cargada como --font-data en layout.tsx). */
+@utility font-data {
+  font-family: var(--font-data, ui-monospace), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rejilla fina de fondo para las secciones oscuras. */
+@utility bg-grid-fine {
+  background-image:
+    linear-gradient(to right, oklch(1 0 0 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(1 0 0 / 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
 }

@@ -1,7 +1,8 @@
 // The app's name and header links, in one place: the header, the footer and every page title read them.
 export const site = {
-  name: 'New Totalum app',
-  description: 'Built with Totalum',
+  name: 'HipoScore',
+  description:
+    'Motor embebible de scoring y cualificación previa de riesgo hipotecario: inserta el simulador en tu web, captura leads con consentimiento RGPD y recíbelos ya filtrados por viabilidad.',
   /** The logo image's URL (the user's file): the header, the footer and the browser icon show it. Empty: the name alone. */
   logo: '',
   /**
@@ -9,7 +10,7 @@ export const site = {
    * /account (404 while `false`), and the header shows Sign in / Get started (or Sign out). Set it when the app needs
    * sign-in.
    */
-  accounts: false,
+  accounts: true,
   /** Sign-up confirms the e-mail with an 8-digit code before the first sign-in. Only when the owner asks for it. */
   verifyEmail: false,
   /** Staff/members-only app (nothing public): signed-out pages show only the brand; `npm run check` refuses data there. */
@@ -28,9 +29,16 @@ export const site = {
   /** The owner's and staff's addresses for admin pages: one counts only once its account verified the e-mail (`isAdmin`, `@/lib/admin`). */
   admins: [] as string[],
   /** Links everyone sees (landing sections, public pages). */
-  nav: [] as { href: string; label: string }[],
+  nav: [
+    { href: '/#como-funciona', label: 'Cómo funciona' },
+    { href: '/#formula', label: 'Fórmula' },
+    { href: '/#integracion', label: 'Integración' },
+  ] as { href: string; label: string }[],
   /** Links only signed-in users see (dashboard, lists, admin). */
-  appNav: [{ href: '/account', label: 'Account' }] as { href: string; label: string }[],
+  appNav: [
+    { href: '/admin', label: 'Leads' },
+    { href: '/admin/ajustes', label: 'Ajustes' },
+  ] as { href: string; label: string }[],
 };
 
 /** The header and footer appear once the app has something to put in them: links or accounts (a one-page "hello" has neither). */
