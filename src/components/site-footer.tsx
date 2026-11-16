@@ -8,9 +8,9 @@ export function SiteFooter() {
   const col = 'grid content-start gap-2 text-sm text-zinc-600';
   const a = 'transition-colors hover:text-brand';
   return (
-    <footer className="border-t border-zinc-200 bg-zinc-50 py-12 text-sm text-zinc-600">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr]">
-        <div className="max-w-sm">
+    <footer className="border-t border-zinc-200 bg-zinc-50 py-8 text-sm md:py-12 text-zinc-600">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-4 sm:px-6 md:grid-cols-[1.5fr_1fr_1fr] md:gap-10">
+        <div className="col-span-2 max-w-sm md:col-span-1">
           <p className="font-display text-lg font-semibold tracking-tight text-brand">{site.name}</p>
           <p className="mt-2 leading-6">
             Cualificación previa de riesgo hipotecario para intermediarios. Cálculo determinista, sin cajas negras.
