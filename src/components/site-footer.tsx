@@ -1,10 +1,20 @@
 import Link from 'next/link';
 
+import { currentSession } from '@/lib/auth';
 import { hasShell, site } from '@/lib/site';
 
 // El pie que comparten todas las rutas (la pinta layout.tsx, salvo en /embed).
-export function SiteFooter() {
+export async function SiteFooter() {
   if (!hasShell()) return null;
+  if (site.accounts && (await currentSession({ admin: false }))) {
+    return (
+      <footer className="border-t border-zinc-200 bg-zinc-50 py-5 text-xs text-zinc-500">
+        <p className="mx-auto max-w-6xl px-4 sm:px-6">
+          © {new Date().getFullYear()} {site.name} · Panel de gestión
+        </p>
+      </footer>
+    );
+  }
   const col = 'grid content-start gap-2 text-sm text-zinc-600';
   const a = 'transition-colors hover:text-brand';
   return (

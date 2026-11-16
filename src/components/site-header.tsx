@@ -12,7 +12,7 @@ const link =
 export async function SiteHeader() {
   if (!hasShell()) return null;
   const session = site.accounts ? await currentSession({ admin: false }) : null;
-  const links = session ? [...site.nav, ...site.appNav] : site.nav;
+  const links = session ? [...site.appNav, { href: '/admin/ajustes', label: 'Ajustes' }] : site.nav;
   const items = (
     <>
       {links.map((l) => (
