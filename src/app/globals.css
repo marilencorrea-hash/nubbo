@@ -101,3 +101,24 @@
     linear-gradient(to bottom, oklch(1 0 0 / 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
 }
+
+/* Efectos de pulsación en botones y CTA */
+button:not(:disabled),
+a.rounded-full,
+a[class*="rounded-lg"][class*="px-"] {
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease, filter 0.18s ease;
+}
+button:not(:disabled):hover,
+a.rounded-full:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -8px rgb(0 0 0 / 0.35);
+}
+button:not(:disabled):active,
+a.rounded-full:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 2px 6px -2px rgb(0 0 0 / 0.3);
+  filter: brightness(0.88);
+}
+@media (prefers-reduced-motion: reduce) {
+  button:hover, button:active, a.rounded-full:hover, a.rounded-full:active { transform: none; }
+}
