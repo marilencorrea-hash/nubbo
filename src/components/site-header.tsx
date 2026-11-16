@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { HeaderFx } from '@/components/header-fx';
 import { SignOutEs } from '@/components/sign-out-es';
 import { currentSession } from '@/lib/auth';
 import { hasShell, site } from '@/lib/site';
@@ -37,8 +38,9 @@ export async function SiteHeader() {
     </>
   );
   return (
-    <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+    <header className="group/h sticky top-0 z-30 border-b border-transparent bg-white transition-[background-color,border-color,box-shadow] duration-300 data-[scrolled=true]:border-zinc-200 data-[scrolled=true]:bg-white/80 data-[scrolled=true]:shadow-[0_8px_24px_-16px_oklch(0.3_0.095_262/0.35)] data-[scrolled=true]:backdrop-blur-xl">
+      <HeaderFx />
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 transition-[height] duration-300 group-data-[scrolled=true]/h:h-14 sm:px-6">
         <Link className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-tight text-brand" href="/">
           {site.logo ? (
             <img alt="" className="h-9 w-auto" src={site.logo} />

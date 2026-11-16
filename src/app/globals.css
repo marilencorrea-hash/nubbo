@@ -38,6 +38,62 @@
   font-variant-numeric: tabular-nums;
 }
 
+/*
+ * Efectos de scroll (los activa src/components/scroll-fx.tsx añadiendo data-fx a <html>).
+ * Solo con movimiento permitido: con prefers-reduced-motion todo se ve desde el primer momento.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  html[data-fx] [data-reveal] {
+    opacity: 0;
+    transform: translate3d(0, 1.75rem, 0);
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms),
+      transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms);
+    will-change: opacity, transform;
+  }
+  html[data-fx] [data-reveal='left'] {
+    transform: translate3d(-1.75rem, 0, 0);
+  }
+  html[data-fx] [data-reveal='right'] {
+    transform: translate3d(1.75rem, 0, 0);
+  }
+  html[data-fx] [data-reveal='scale'] {
+    transform: scale(0.96);
+  }
+  html[data-fx] [data-reveal][data-in] {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
+  /* Entrada del hero al cargar (solo CSS: no depende de JavaScript). */
+  @keyframes hero-in {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 1.25rem, 0);
+    }
+  }
+  .hero-in {
+    animation: hero-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--d, 0ms) both;
+  }
+
+  /* El punto "en vivo" de la etiqueta del hero. */
+  @keyframes ping-soft {
+    75%,
+    100% {
+      transform: scale(2.4);
+      opacity: 0;
+    }
+  }
+  .ping-soft {
+    animation: ping-soft 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
 /* Rejilla fina de fondo para las secciones oscuras. */
 @utility bg-grid-fine {
   background-image:
