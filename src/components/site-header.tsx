@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { HeaderFx } from '@/components/header-fx';
 import { SignOutEs } from '@/components/sign-out-es';
 import { currentSession } from '@/lib/auth';
+import { isAdmin } from '@/lib/admin';
 import { hasShell, site } from '@/lib/site';
 
 const link =
@@ -12,7 +13,7 @@ const link =
 export async function SiteHeader() {
   if (!hasShell()) return null;
   const session = site.accounts ? await currentSession({ admin: false }) : null;
-  const links = session ? [...site.appNav, { href: '/admin/ajustes', label: 'Ajustes' }] : site.nav;
+  const links = session ? [...site.appNav.filter((l) => l.href !== '/admin/clientes' || isAdmin(session.user)), { href: '/admin/ajustes', label: 'Ajustes' }] : site.nav;
   const items = (
     <>
       {links.map((l) => (

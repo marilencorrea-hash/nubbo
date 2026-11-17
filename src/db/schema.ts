@@ -39,4 +39,13 @@ export const config = sqliteTable('config', {
   umbralAmbar: real('umbral_ambar').notNull().default(40),
   webhookUrl: text('webhook_url').notNull().default(''),
   emailAviso: text('email_aviso').notNull().default(''),
-}, (t) => [uniqueIndex('config_clave_uq').on(t.clave)]);
+  invitacion: text(),
+}, (t) => [uniqueIndex('config_clave_uq').on(t.clave), uniqueIndex('config_invitacion_uq').on(t.invitacion)]);
+
+/** Cuenta (usuario) que gestiona los leads de un cliente: cada usuario pertenece a un solo cliente. */
+export const clienteMiembros = sqliteTable('cliente_miembros', {
+  id: text().primaryKey(),
+  clienteId: text('cliente_id').notNull().references(() => config.id),
+  userId: text('user_id').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+}, (t) => [uniqueIndex('cliente_miembros_user_uq').on(t.userId), index('cliente_miembros_cliente_idx').on(t.clienteId)]);

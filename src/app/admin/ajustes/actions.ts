@@ -7,13 +7,15 @@ import { db } from '@/db';
 import { config } from '@/db/schema';
 import { isAdmin } from '@/lib/admin';
 import { clienteIdQuery, clienteQuery } from '@/lib/config';
+import { miClienteQuery, nuevoToken } from '@/lib/acceso';
 import { loadPage } from '@/lib/load-page';
 
 export async function guardarAjustes(_prev: { ok?: boolean; error?: string } | null, form: FormData) {
-  const { user } = await loadPage(() => [clienteIdQuery(String(form.get('clienteId') ?? ''))] as const, { signedIn: true });
-  if (!user || !isAdmin(user)) return { error: 'Sin permiso.' };
-  const [cli] = (await loadPage(() => [clienteIdQuery(String(form.get('clienteId') ?? ''))] as const)).data[0];
+  const { user, data: d } = await loadPage((me) => [clienteIdQuery(String(form.get('clienteId') ?? '')), miClienteQuery(me)] as const, { signedIn: true });
+  if (!user) return { error: 'Sin permiso.' };
+  const [cli] = d[0];
   if (!cli) return { error: 'Cliente no encontrado.' };
+  if (!isAdmin(user) && d[1][0]?.id !== cli.id) return { error: 'Sin permiso.' };
   const verde = Number(form.get('umbralVerde'));
   const ambar = Number(form.get('umbralAmbar'));
   const webhookUrl = String(form.get('webhookUrl') ?? '').trim();
@@ -35,8 +37,17 @@ export async function crearCliente(_prev: { ok?: boolean; error?: string } | nul
   if (!/^[a-z0-9][a-z0-9-]{1,38}$/.test(clave)) return { error: 'La clave usa 2-39 letras minúsculas, números o guiones.' };
   const [existe] = data[0];
   if (existe) return { error: 'Esa clave ya existe.' };
-  await db.insert(config).values({ id: crypto.randomUUID(), nombre, clave, createdAt: new Date() });
+  await db.insert(config).values({ id: crypto.randomUUID(), nombre, clave, createdAt: new Date(), invitacion: nuevoToken() });
   console.log('cliente creado', clave);
   revalidatePath('/admin/clientes');
   return { ok: true };
+}
+
+export async function generarInvitacion(form: FormData) {
+  const { user } = await loadPage(() => [clienteIdQuery('main')] as const, { signedIn: true });
+  if (!user || !isAdmin(user)) return;
+  const id = String(form.get('clienteId') ?? '');
+  await db.update(config).set({ invitacion: nuevoToken() }).where(eq(config.id, id));
+  console.log('invitación generada', id);
+  revalidatePath('/admin/clientes');
 }

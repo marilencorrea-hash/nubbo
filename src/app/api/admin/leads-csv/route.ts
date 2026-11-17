@@ -2,7 +2,7 @@ import { leads } from '@/db/schema';
 import { isAdmin } from '@/lib/admin';
 import { leadsFiltrados } from '@/lib/leads-query';
 import { loadPage } from '@/lib/load-page';
-import { configQuery } from '@/lib/config';
+import { miClienteQuery } from '@/lib/acceso';
 
 const cols = ['id', 'nombre', 'email', 'telefono', 'precio_inmueble', 'entrada', 'importe', 'plazo_anios', 'tipo_interes',
   'ingresos_netos', 'otras_cuotas', 'cuota_mensual', 'dti', 'viabilidad', 'consentimiento_rgpd', 'created_at'];
@@ -15,11 +15,13 @@ const cell = (v: unknown) => {
 };
 
 export async function GET(request: Request) {
-  const { user } = await loadPage(() => [configQuery()] as const, { signedIn: true });
+  const { user, data } = await loadPage((me) => [miClienteQuery(me)] as const, { signedIn: true });
   if (!user) return Response.json({ error: 'No autenticado' }, { status: 401 });
-  if (!isAdmin(user)) return Response.json({ error: 'Sin permiso' }, { status: 403 });
+  const admin = isAdmin(user);
+  const mi = data[0][0];
+  if (!admin && !mi) return Response.json({ error: 'Sin permiso' }, { status: 403 });
   const p = new URL(request.url).searchParams;
-  const rows = await leadsFiltrados(p.get('viabilidad'), p.get('desde'), p.get('hasta'), 10000, p.get('cliente'));
+  const rows = await leadsFiltrados(p.get('viabilidad'), p.get('desde'), p.get('hasta'), 10000, admin ? p.get('cliente') : mi!.id);
   const lines = [cols.join(',')].concat(rows.map((r) => [r.id, r.nombre, r.email, r.telefono, r.precioInmueble, r.entrada, r.importe,
     r.plazoAnios, r.tipoInteres, r.ingresosNetos, r.otrasCuotas, r.cuotaMensual, r.dti, r.viabilidad, r.consentimientoRgpd,
     r.createdAt.toISOString()].map(cell).join(',')));

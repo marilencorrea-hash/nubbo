@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import type { ReactNode } from 'react';
 
-import { AccesoRestringido } from '@/components/acceso-restringido';
 import { ScaleBar, ViabBadge } from '@/components/semaforo';
 import { AppPage, Card, button } from '@/components/ui';
 import { db } from '@/db';
 import { config, leads } from '@/db/schema';
 import { isAdmin } from '@/lib/admin';
+import { miClienteQuery } from '@/lib/acceso';
+import { SinCliente } from '@/components/sin-cliente';
 import { defaultConfig } from '@/lib/config';
 import { eur, eur0, fecha, pct } from '@/lib/format';
 import { loadPage } from '@/lib/load-page';
@@ -32,12 +33,12 @@ function Dl({ items }: { items: [string, ReactNode][] }) {
 
 export default async function LeadDetalle({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { user, data } = await loadPage((_me) => [db.select().from(leads).where(eq(leads.id, id)).limit(1), db.select().from(config).innerJoin(leads, eq(leads.clienteId, config.id)).where(eq(leads.id, id)).limit(1)] as const, { signedIn: true });
+  const { user, data } = await loadPage((me) => [miClienteQuery(me), db.select().from(leads).where(eq(leads.id, id)).limit(1), db.select().from(config).innerJoin(leads, eq(leads.clienteId, config.id)).where(eq(leads.id, id)).limit(1)] as const, { signedIn: true });
   if (!user) redirect('/login');
-  if (!isAdmin(user)) return <AccesoRestringido />;
-  const lead = data[0][0];
-  if (!lead) notFound();
-  const cfg = { ...defaultConfig, ...data[1][0]?.config };
+  const lead = data[1][0];
+  if (!isAdmin(user) && !data[0][0]) return <SinCliente />;
+  if (!lead || (!isAdmin(user) && lead.clienteId !== data[0][0]?.id)) notFound();
+  const cfg = { ...defaultConfig, ...data[2][0]?.config };
   const umbrales = { verde: cfg.umbralVerde, ambar: cfg.umbralAmbar };
   const hook = lead.webhookEstado;
 

@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
-import { AccesoRestringido } from '@/components/acceso-restringido';
 import { ViabBadge } from '@/components/semaforo';
 import { AppPage, Card, EmptyState, Stat, button, input } from '@/components/ui';
 import { isAdmin } from '@/lib/admin';
@@ -10,6 +9,8 @@ import { eur, fecha, pct } from '@/lib/format';
 import { db } from '@/db';
 import { config } from '@/db/schema';
 import { leadsFiltrados } from '@/lib/leads-query';
+import { miClienteQuery } from '@/lib/acceso';
+import { SinCliente } from '@/components/sin-cliente';
 import { loadPage } from '@/lib/load-page';
 
 export const metadata: Metadata = { title: 'Leads' };
@@ -21,12 +22,15 @@ export default async function AdminLeads({ searchParams }: { searchParams: Promi
   const viab = one(sp.viabilidad);
   const desde = one(sp.desde);
   const hasta = one(sp.hasta);
-  const cliente = one(sp.cliente);
-  const { user, data } = await loadPage((_me) => [leadsFiltrados(viab, desde, hasta, 500, cliente), db.select({ id: config.id, nombre: config.nombre }).from(config).limit(200)] as const, { signedIn: true });
+  let cliente = one(sp.cliente);
+  const { user, data } = await loadPage((me) => [leadsFiltrados(viab, desde, hasta, 500, cliente), db.select({ id: config.id, nombre: config.nombre }).from(config).limit(200), miClienteQuery(me)] as const, { signedIn: true });
   if (!user) redirect('/login');
-  if (!isAdmin(user)) return <AccesoRestringido />;
-  const rows = data[0];
-  const clientes = data[1];
+  const admin = isAdmin(user);
+  const mi = data[2][0];
+  if (!admin && !mi) return <SinCliente />;
+  if (!admin) cliente = mi!.id;
+  const rows = admin ? data[0] : await leadsFiltrados(viab, desde, hasta, 500, cliente);
+  const clientes = admin ? data[1] : [];
 
   const qs = new URLSearchParams();
   if (viab) qs.set('viabilidad', viab);
@@ -60,7 +64,7 @@ export default async function AdminLeads({ searchParams }: { searchParams: Promi
 
       <Card>
         <form action="/admin" className="grid gap-4 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto]" method="get">
-          <label className={label}>
+          {admin && <label className={label}>
             Cliente
             <select className={input} defaultValue={cliente} name="cliente">
               <option value="">Todos</option>
@@ -70,7 +74,7 @@ export default async function AdminLeads({ searchParams }: { searchParams: Promi
                 </option>
               ))}
             </select>
-          </label>
+          </label>}
           <label className={label}>
             Viabilidad
             <select className={input} defaultValue={viab} name="viabilidad">
