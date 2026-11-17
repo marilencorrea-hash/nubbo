@@ -1,7 +1,7 @@
 'use server';
 import { randomUUID } from 'node:crypto';
 
-import { eq } from 'drizzle-orm';
+import { and, eq, gte, sql } from 'drizzle-orm';
 import { totalum } from 'totalum-sdk';
 
 import { db } from '@/db';
@@ -51,6 +51,13 @@ export async function solicitarContacto(d: DatosWizard, c: Contacto, clave?: str
   const [cfg] = await clienteQuery(clave);
   if (!cfg) return { ok: false, error: 'Cliente no válido.' };
   const conf = { ...defaultConfig, ...cfg };
+  // Freno anti-spam: máx. 40 leads por cliente cada 10 min y sin repetir el mismo e-mail en ese tiempo.
+  const desde = new Date(Date.now() - 600_000);
+  const [[tot], [dup]] = await Promise.all([
+    db.select({ n: sql<number>`count(*)` }).from(leads).where(and(eq(leads.clienteId, cfg.id), gte(leads.createdAt, desde))),
+    db.select({ n: sql<number>`count(*)` }).from(leads).where(and(eq(leads.clienteId, cfg.id), eq(leads.email, email), gte(leads.createdAt, desde))),
+  ]);
+  if ((tot?.n ?? 0) >= 40 || (dup?.n ?? 0) >= 1) return { ok: false, error: 'Ya hemos recibido tu solicitud. Inténtalo de nuevo en unos minutos.' };
   const r = calcular(v, conf.umbralVerde, conf.umbralAmbar);
   const lead = {
     id: randomUUID(), nombre, email, telefono, ...v, cuotaMensual: r.cuotaMensual, dti: r.dti,
