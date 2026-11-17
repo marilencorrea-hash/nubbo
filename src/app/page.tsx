@@ -58,7 +58,7 @@ export default async function Home() {
               Scoring hipotecario embebible · B2B
             </p>
             <h1 className="hero-in mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl" style={d(90)}>
-              Sabe si un lead es <span className="text-sky-300">financiable</span> antes de llamarle.
+              Deja de llamar a curiosos: <span className="text-sky-300">consigue solo hipotecas financiables.</span>
             </h1>
             <p className="hero-in mt-5 max-w-prose text-base leading-7 text-white/75 sm:text-lg" style={d(180)}>
               HipoScore es el simulador que insertas en tu web: calcula la cuota, el DTI y un semáforo de viabilidad, y te
