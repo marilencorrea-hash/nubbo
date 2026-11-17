@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { IBM_Plex_Mono, Instrument_Sans, Schibsted_Grotesk } from 'next/font/google';
 import type { ReactNode } from 'react';
 
@@ -19,10 +19,24 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(await siteUrl()),
     title: { default: `${site.name} · Scoring hipotecario embebible para intermediarios`, template: `%s · ${site.name}` },
     description: site.description,
+    applicationName: site.name,
+    keywords: ['scoring hipotecario', 'simulador hipoteca', 'cuota hipoteca', 'DTI', 'leads hipotecarios', 'intermediarios hipotecarios', 'widget embebible', 'RGPD'],
+    alternates: { canonical: '/' },
+    openGraph: {
+      type: 'website',
+      locale: 'es_ES',
+      siteName: site.name,
+      title: `${site.name} · Scoring hipotecario embebible`,
+      description: site.description,
+    },
+    twitter: { card: 'summary_large_image', title: `${site.name} · Scoring hipotecario embebible`, description: site.description },
+    robots: { index: true, follow: true },
     // the logo, else the name's initials on the brand colour (src/app/site-icon.svg): every site has an icon
     icons: { icon: site.logo || '/site-icon.svg' },
   };
 }
+
+export const viewport: Viewport = { themeColor: '#0b2a5b' };
 
 // Grotesk con carácter para titulares, una sans neutra para texto y una mono para cifras y fórmulas.
 const heading = Schibsted_Grotesk({ subsets: ['latin'], variable: '--font-heading' });
