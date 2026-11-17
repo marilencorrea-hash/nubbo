@@ -40,6 +40,9 @@ export const config = sqliteTable('config', {
   webhookUrl: text('webhook_url').notNull().default(''),
   emailAviso: text('email_aviso').notNull().default(''),
   invitacion: text(),
+  colorPrimario: text('color_primario').notNull().default(''),
+  colorAcento: text('color_acento').notNull().default(''),
+  fuente: text().notNull().default(''),
 }, (t) => [uniqueIndex('config_clave_uq').on(t.clave), uniqueIndex('config_invitacion_uq').on(t.invitacion)]);
 
 /** Cuenta (usuario) que gestiona los leads de un cliente: cada usuario pertenece a un solo cliente. */

@@ -4,14 +4,19 @@ import { useActionState, useState } from 'react';
 
 import { guardarAjustes } from '@/app/admin/ajustes/actions';
 import { ScaleBar } from '@/components/semaforo';
+import { FUENTES, temaCliente } from '@/lib/tema';
 import { Card, button, input } from '@/components/ui';
 
-type Inicial = { umbralVerde: number; umbralAmbar: number; webhookUrl: string; emailAviso: string };
+type Inicial = { umbralVerde: number; umbralAmbar: number; webhookUrl: string; emailAviso: string; colorPrimario: string; colorAcento: string; fuente: string };
 
 export function AjustesForm({ inicial, clienteId }: { inicial: Inicial; clienteId: string }) {
   const [state, action, pending] = useActionState(guardarAjustes, null);
   const [verde, setVerde] = useState(String(inicial.umbralVerde));
   const [ambar, setAmbar] = useState(String(inicial.umbralAmbar));
+  const [c1, setC1] = useState(inicial.colorPrimario);
+  const [c2, setC2] = useState(inicial.colorAcento);
+  const [fuente, setFuente] = useState(inicial.fuente);
+  const tema = temaCliente({ colorPrimario: c1, colorAcento: c2, fuente });
   const v = Number(verde);
   const a = Number(ambar);
   const valido = v > 0 && a > v && a <= 100;
@@ -68,6 +73,45 @@ export function AjustesForm({ inicial, clienteId }: { inicial: Inicial; clienteI
           </div>
         </Card>
       </div>
+
+      <Card title="Aspecto del simulador">
+        <p className="text-sm leading-6 text-zinc-600">Adapta el simulador a la tipografía y los colores de tu web para que no desentone. Los cambios se ven al instante abajo.</p>
+        {tema.googleHref && <link href={tema.googleHref} precedence="default" rel="stylesheet" />}
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <label className={label}>
+            Color principal
+            <span className="mt-1.5 flex items-center gap-2">
+              <input aria-label="Elegir color principal" className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1" onChange={(e) => setC1(e.target.value)} type="color" value={/^#[0-9a-f]{6}$/i.test(c1) ? c1 : '#0b2a6b'} />
+              <input className={`${input} font-data mt-0`} maxLength={7} name="colorPrimario" onChange={(e) => setC1(e.target.value)} placeholder="#0B2A6B" value={c1} />
+            </span>
+          </label>
+          <label className={label}>
+            Color de acento
+            <span className="mt-1.5 flex items-center gap-2">
+              <input aria-label="Elegir color de acento" className="h-10 w-12 cursor-pointer rounded border border-zinc-300 bg-white p-1" onChange={(e) => setC2(e.target.value)} type="color" value={/^#[0-9a-f]{6}$/i.test(c2) ? c2 : '#1d4ed8'} />
+              <input className={`${input} font-data mt-0`} maxLength={7} name="colorAcento" onChange={(e) => setC2(e.target.value)} placeholder="#1D4ED8" value={c2} />
+            </span>
+          </label>
+          <label className={label}>
+            Tipografía
+            <select className={`${input} mt-1.5`} name="fuente" onChange={(e) => setFuente(e.target.value)} value={fuente}>
+              {FUENTES.map((f) => (
+                <option key={f.id} value={f.id}>{f.nombre}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <p className="mt-2 text-xs text-zinc-500">Deja los colores vacíos para usar los de HipoScore.</p>
+        <div className="mt-4 rounded-xl border border-zinc-200 bg-white p-5" style={tema.style}>
+          <p className="font-display text-sm font-semibold text-brand">Viabilidad hipotecaria</p>
+          <p className="mt-1 text-sm text-zinc-600">Así verán el simulador tus visitantes: textos, cifras y botones.</p>
+          <p className="font-data mt-2 text-2xl font-semibold text-brand">1.024,50 €</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <span className="inline-flex rounded-lg bg-brand px-5 py-2.5 text-sm font-medium text-white">Continuar</span>
+            <span className="inline-flex rounded-lg border border-accent px-5 py-2.5 text-sm font-medium text-accent">Atrás</span>
+          </div>
+        </div>
+      </Card>
 
       <div className="flex flex-wrap items-center gap-4">
         <button className={`${button.primary} px-5 py-2.5`} disabled={pending} type="submit">

@@ -8,6 +8,7 @@ import { config } from '@/db/schema';
 import { isAdmin } from '@/lib/admin';
 import { clienteIdQuery, clienteQuery } from '@/lib/config';
 import { miClienteQuery, nuevoToken } from '@/lib/acceso';
+import { FUENTES, esColor } from '@/lib/tema';
 import { loadPage } from '@/lib/load-page';
 
 export async function guardarAjustes(_prev: { ok?: boolean; error?: string } | null, form: FormData) {
@@ -20,10 +21,15 @@ export async function guardarAjustes(_prev: { ok?: boolean; error?: string } | n
   const ambar = Number(form.get('umbralAmbar'));
   const webhookUrl = String(form.get('webhookUrl') ?? '').trim();
   const emailAviso = String(form.get('emailAviso') ?? '').trim().toLowerCase();
+  const colorPrimario = String(form.get('colorPrimario') ?? '').trim();
+  const colorAcento = String(form.get('colorAcento') ?? '').trim();
+  const fuente = String(form.get('fuente') ?? '');
+  if ((colorPrimario && !esColor(colorPrimario)) || (colorAcento && !esColor(colorAcento))) return { error: 'Los colores deben tener formato #RRGGBB.' };
+  if (!FUENTES.some((f) => f.id === fuente)) return { error: 'Tipografía no válida.' };
   if (!(verde > 0 && ambar > verde && ambar <= 100)) return { error: 'El umbral ámbar debe ser mayor que el verde (entre 1 y 100).' };
   if (webhookUrl && !/^https:\/\/[^\s]+$/.test(webhookUrl)) return { error: 'La URL del webhook debe empezar por https://' };
   if (emailAviso && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAviso)) return { error: 'E-mail de aviso no válido.' };
-  await db.update(config).set({ umbralVerde: verde, umbralAmbar: ambar, webhookUrl, emailAviso }).where(eq(config.id, cli.id));
+  await db.update(config).set({ umbralVerde: verde, umbralAmbar: ambar, webhookUrl, emailAviso, colorPrimario, colorAcento, fuente }).where(eq(config.id, cli.id));
   revalidatePath('/admin/ajustes');
   return { ok: true };
 }

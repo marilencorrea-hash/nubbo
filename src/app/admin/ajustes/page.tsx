@@ -27,7 +27,7 @@ export default async function Ajustes({ searchParams }: { searchParams: Promise<
     <AppPage description="Cómo se clasifica cada lead de este cliente y a dónde se envía." title={`Ajustes · ${cfg.nombre}`}>
       <AjustesForm
         clienteId={fila.id}
-        inicial={{ umbralVerde: cfg.umbralVerde, umbralAmbar: cfg.umbralAmbar, webhookUrl: cfg.webhookUrl ?? '', emailAviso: cfg.emailAviso ?? '' }}
+        inicial={{ umbralVerde: cfg.umbralVerde, umbralAmbar: cfg.umbralAmbar, webhookUrl: cfg.webhookUrl ?? '', emailAviso: cfg.emailAviso ?? '', colorPrimario: cfg.colorPrimario ?? '', colorAcento: cfg.colorAcento ?? '', fuente: cfg.fuente ?? '' }}
       />
       {!admin && (
         <Card title="Código para insertar el simulador en tu web">

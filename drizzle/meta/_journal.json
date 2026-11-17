@@ -43,6 +43,13 @@
       "when": 1794912901277,
       "tag": "0005_normal_leper_queen",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794916959290,
+      "tag": "0006_omniscient_stryfe",
+      "breakpoints": true
     }
   ]
 }
